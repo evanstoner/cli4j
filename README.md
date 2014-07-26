@@ -2,7 +2,7 @@
 
 **A tiny library for turning CLIs into Java APIs.**
 
-cli4j allows you quickly create a Java API for any command-line tool. It is itself a fluent API and excels at helping you create a fluent API for a command-line tool.
+cli4j allows you to quickly create a Java API for any command-line tool. It is itself a fluent API and excels at helping you create a fluent API for a command-line tool.
 
 ## Example
 
@@ -55,7 +55,7 @@ class AddFixedIpCommand extends Command {
 
 ```
 
-Then create a method to get an instance of this command to `NovaCli`:
+Then create a method to get an instance of this command in `NovaCli`:
 
 ```java
 public AddFixedIpCommand addFixedIp() {
@@ -63,7 +63,7 @@ public AddFixedIpCommand addFixedIp() {
 }
 ```
 
-Then use it:
+And finally, use it:
 
 ```java
 Result r = nova.addFixedIp().server("my-server").networkId("some-uuid").exec();
