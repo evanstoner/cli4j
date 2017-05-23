@@ -153,9 +153,9 @@ public abstract class Command {
         }
 
         if (_paramOrder == ParameterOrder.NAMED_THEN_POSITIONAL) {
-            return namedSb.toString().trim() + " " + namedSb.toString().trim();
+            return namedSb.toString().trim() + " " + positionalSb.toString().trim();
         } else {
-            return namedSb.toString().trim() + " " + namedSb.toString().trim();
+            return positionalSb.toString().trim() + " " + namedSb.toString().trim();
         }
     }
 }
