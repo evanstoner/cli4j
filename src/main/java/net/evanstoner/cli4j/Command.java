@@ -154,19 +154,23 @@ public abstract class Command {
     /**
      * Set a short option as a flag
      *
-     * @param name The name of the argument as it should appear in the command, but without the prefix.
+     * @param opt The name of the argument as it should appear in the command, but without the prefix.
      */
-    protected void shortOption(String name) {
-        shortOption(name, null);
+    protected void shortOption(String opt) {
+        shortOption(opt, null);
     }
 
     /**
      * Set a short option as a flag
      *
-     * @param name The name of the argument as it should appear in the command, but without the prefix.
+     * @param opt The name of the argument as it should appear in the command, but without the prefix.
      */
-    protected void shortOption(char name) {
-        shortOption(String.valueOf(name), null);
+    protected void shortOption(char opt) {
+        shortOption(opt, null);
+    }
+
+    protected void shortOption(char opt, String value) {
+        shortOption(String.valueOf(opt), value);
     }
 
     /**
