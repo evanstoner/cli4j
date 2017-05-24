@@ -144,7 +144,6 @@ public abstract class Command {
     public Result exec() throws IOException, InterruptedException {
         Process p;
         int exitCode;
-        StringBuilder outputSb = new StringBuilder();
         String command;
 
         command = build();
@@ -153,13 +152,20 @@ public abstract class Command {
         p = Runtime.getRuntime().exec(command);
         exitCode = p.waitFor();
 
-        BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+        BufferedReader outBr = new BufferedReader(new InputStreamReader(p.getInputStream()));
+        BufferedReader errBr = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+
+        StringBuilder outputSb = new StringBuilder();
+        StringBuilder errSb = new StringBuilder();
         String line;
-        while ((line = br.readLine()) != null) {
-            outputSb.append(line + "\n");
+        while ((line = outBr.readLine()) != null) {
+            outputSb.append(line).append(System.lineSeparator());
+        }
+        while ((line = errBr.readLine()) != null) {
+            errSb.append(line).append(System.lineSeparator());
         }
 
-        return new Result(exitCode, outputSb.toString());
+        return new Result(exitCode, outputSb.toString(), errSb.toString());
     }
 
     String build() {

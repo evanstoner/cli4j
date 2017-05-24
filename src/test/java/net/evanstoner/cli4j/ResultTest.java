@@ -18,6 +18,7 @@ public class ResultTest {
         assertFalse(r.hasOutput());
         assertFalse(r.isSuccessful());
         assertEquals(null, r.getOutput());
+        assertFalse(r.hasErrorOutput());
     }
 
     @Test
@@ -27,6 +28,7 @@ public class ResultTest {
         assertTrue(r.hasOutput());
         assertFalse(r.isSuccessful());
         assertEquals("mystring", r.getOutput());
+        assertFalse(r.hasErrorOutput());
     }
 
     @Test
@@ -36,6 +38,7 @@ public class ResultTest {
         assertTrue(r.hasOutput());
         assertTrue(r.isSuccessful());
         assertEquals("mystring", r.getOutput());
+        assertFalse(r.hasErrorOutput());
     }
 
     @Test
@@ -45,5 +48,17 @@ public class ResultTest {
         assertFalse(r.hasOutput());
         assertTrue(r.isSuccessful());
         assertEquals("", r.getOutput());
+        assertFalse(r.hasErrorOutput());
+    }
+
+    @Test
+    public void givenErrorOutput() {
+        Result r = new Result(25, "", "myerror");
+        assertEquals(25, r.getExitCode());
+        assertFalse(r.hasOutput());
+        assertTrue(r.hasErrorOutput());
+        assertFalse(r.isSuccessful());
+        assertEquals("", r.getOutput());
+        assertEquals("myerror", r.getErrorOutput());
     }
 }
