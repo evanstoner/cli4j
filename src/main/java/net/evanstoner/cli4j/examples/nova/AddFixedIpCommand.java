@@ -17,5 +17,4 @@ class AddFixedIpCommand extends Command {
         positional(1, networkId);
         return this;
     }
-
 }

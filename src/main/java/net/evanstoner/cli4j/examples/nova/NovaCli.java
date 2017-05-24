@@ -15,5 +15,4 @@ public class NovaCli extends Command {
     public AddFixedIpCommand addFixedIp() {
         return new AddFixedIpCommand(this);
     }
-
 }
