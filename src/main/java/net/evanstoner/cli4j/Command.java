@@ -79,7 +79,7 @@ public abstract class Command {
      * @param glue The glue string.
      * @return this
      */
-    public Command longOptsGlue(String glue) {
+    protected Command longOptsGlue(String glue) {
         _longOptsGlue = glue;
         return this;
     }
