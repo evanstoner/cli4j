@@ -3,28 +3,38 @@ package net.evanstoner.cli4j;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
+import java.util.TreeMap;
 
 public abstract class Command {
 
-    public static enum ParameterOrder {
+
+    public enum ParameterOrder {
         NAMED_THEN_POSITIONAL,
         POSITIONAL_THEN_NAMED
     }
 
-    private String _baseCommand;
     private ParameterOrder _paramOrder = ParameterOrder.NAMED_THEN_POSITIONAL;
+
+    private String _baseCommand;
     private Command _parentCommmand = null;
     private String _parentCommandGlue = " ";
-    private String _namedPrefix = "--";
-    private String _flagPrefix = "-";
 
-    private HashMap<String, String> _named = new HashMap<String, String>();
-    private HashMap<Integer, String> _positional = new HashMap<Integer, String>();
-    private ArrayList<String> _flags = new ArrayList<String>();
+    private String _longOptsGlue = " ";
+    private String _longOptsPrefix = "--";
+    private String _shortOptsPrefix = "-";
+
+    private HashMap<String, String> _longOpts = new HashMap<>();
+
+    /**
+     * Short opts support options with values or treated as pure flags
+     * <p>
+     * flags will have a value of `null`
+     */
+    private HashMap<String, String> _shortOpts = new HashMap<>();
+
+    // Sorted map
+    private TreeMap<Integer, String> _positional = new TreeMap<>();
 
 
     /**
@@ -61,28 +71,51 @@ public abstract class Command {
         return this;
     }
 
+
     /**
-     * Set the prefix to place before named arguments. Defaults to two dashes ("--").
+     * Set the glue used to combine long option with their value
+     * Default: ' ' (space)
      *
-     * @param prefix The prefix string.
+     * @param glue The glue string.
      * @return this
      */
-    protected Command namedPrefix(String prefix) {
-        _namedPrefix = prefix;
+    public Command longOptsGlue(String glue) {
+        _longOptsGlue = glue;
         return this;
     }
 
     /**
-     * Set the prefix to place before flag arguments. Defaults to a dash ("-").
+     * Set the prefix to place before long options.
+     * <p>
+     * Defaults to two dashes ("--").
      *
      * @param prefix The prefix string.
      * @return this
      */
-    protected Command flagPrefix(String prefix) {
-        _flagPrefix = prefix;
+    protected Command longOptsPrefix(String prefix) {
+        _longOptsPrefix = prefix;
         return this;
     }
 
+    /**
+     * Set the prefix to place before short options.
+     * <p>
+     * Defaults to a dash ("-").
+     *
+     * @param prefix The prefix string.
+     * @return this
+     */
+    protected Command shortOptsPrefix(String prefix) {
+        _shortOptsPrefix = prefix;
+        return this;
+    }
+
+    /**
+     * Set the order of options and arguments when building the command
+     *
+     * @param order ParameterOrder enum
+     * @return this
+     */
     protected Command parameterOrder(ParameterOrder order) {
         _paramOrder = order;
         return this;
@@ -90,30 +123,60 @@ public abstract class Command {
 
 
     /**
-     * Set a named argument.
+     * Set a long option.
      *
-     * @param name  The name of the argument as it should appear in the command, but without the prefix.
+     * @param opt   The name of the option as it should appear in the command, but without the prefix.
      * @param value The value of the argument.
      */
-    protected void named(String name, String value) {
-        _named.put(name, value);
+    protected void longOption(String opt, String value) {
+        _longOpts.put(opt, value);
     }
 
     /**
-     * Set a positional argument.
+     * Set a long option as a flag
+     *
+     * @param name The name of the argument as it should appear in the command, but without the prefix.
+     */
+    protected void longOption(String name) {
+        longOption(name, null);
+    }
+
+    /**
+     * Set a short option.
+     *
+     * @param opt   The name of the option as it should appear in the command, but without the prefix.
+     * @param value The value of the argument.
+     */
+    protected void shortOption(String opt, String value) {
+        _shortOpts.put(opt, value);
+    }
+
+    /**
+     * Set a short option as a flag
+     *
+     * @param name The name of the argument as it should appear in the command, but without the prefix.
+     */
+    protected void shortOption(String name) {
+        shortOption(name, null);
+    }
+
+    /**
+     * Set a short option as a flag
+     *
+     * @param name The name of the argument as it should appear in the command, but without the prefix.
+     */
+    protected void shortOption(char name) {
+        shortOption(String.valueOf(name), null);
+    }
+
+    /**
+     * Set an argument.
      *
      * @param index The index of the argument.
      * @param value The value of the argument.
      */
     protected void positional(int index, String value) {
         _positional.put(index, value);
-    }
-
-    /**
-     * @param name
-     */
-    protected void flag(String name) {
-        _flags.add(name);
     }
 
 
@@ -123,6 +186,8 @@ public abstract class Command {
         String command;
 
         command = build();
+
+        // TODO use ProcessBuilder
 
         // execute the command, capturing the exit code and output
         p = Runtime.getRuntime().exec(command);
@@ -158,29 +223,47 @@ public abstract class Command {
             base = _parentCommmand.build() + _parentCommandGlue;
         }
 
-        StringBuilder namedSb = new StringBuilder();
-        StringBuilder positionalSb = new StringBuilder();
-        List<Integer> positionalIndices;
+        StringBuilder flagsSb = new StringBuilder(_shortOptsPrefix);
+        StringBuilder shortSb = new StringBuilder();
+        StringBuilder longSb = new StringBuilder();
 
-        for (String name : _named.keySet()) {
-            //TODO: missing named arguments
-            namedSb.append(_namedPrefix + name + " " + _named.get(name) + " ");
+        StringBuilder positionalSb = new StringBuilder();
+
+        _shortOpts.forEach((key, value) -> {
+            if (value == null) {
+                flagsSb.append(key);
+            } else {
+                shortSb.append(_shortOptsPrefix).append(key).append(" ");
+                if (!value.trim().isEmpty()) {
+                    shortSb.append(value).append(" ");
+                }
+            }
+        });
+
+        // if there are no flags, remove the flags prefix
+        if (flagsSb.length() <= _shortOptsPrefix.length()) {
+            flagsSb.delete(0, flagsSb.length());
         }
 
-        positionalIndices = new ArrayList<>(_positional.keySet());
-        Collections.sort(positionalIndices);
+        _longOpts.forEach((key, value) -> {
+            if (value == null) {
+                longSb.append(_longOptsPrefix).append(key).append(" ");
+            } else {
+                longSb.append(_longOptsPrefix).append(key).append(_longOptsGlue).append(value).append(" ");
+            }
+        });
 
-        for (Integer i : positionalIndices) {
-            //TODO: missing positional arguments
-            positionalSb.append(_positional.get(i) + " ");
+        // _positional is a TreeMap, which has sorted Keys in natural ordering
+        for (String arg : _positional.values()) {
+            positionalSb.append(arg).append(" ");
         }
 
         base += _baseCommand;
 
         if (_paramOrder == ParameterOrder.NAMED_THEN_POSITIONAL) {
-            base += emptyOrString(namedSb) + emptyOrString(positionalSb);
+            base += emptyOrString(flagsSb) + emptyOrString(shortSb) + emptyOrString(longSb) + emptyOrString(positionalSb);
         } else if (_paramOrder == ParameterOrder.POSITIONAL_THEN_NAMED) {
-            base += emptyOrString(positionalSb) + emptyOrString(namedSb);
+            base += emptyOrString(positionalSb) + emptyOrString(flagsSb) + emptyOrString(shortSb) + emptyOrString(longSb);
         }
 
         return base;
@@ -189,6 +272,8 @@ public abstract class Command {
     /**
      * Get an empty string or string with prepended space char
      * when building commands
+     * <p>
+     * Useful when building commands and only want 1 or 0 spaces between an argument
      *
      * @param sb string builder to check if empty
      * @return empty string if string build is empty,
