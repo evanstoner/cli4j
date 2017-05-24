@@ -15,10 +15,10 @@ public class NovaCli extends Command {
 
   public NovaCli(String username, String password, String tenantName, String authUrl) {
     super("nova");
-    named("os-username", username);
-    named("os-password", password);
-    named("os-tenant-name", tenantName);
-    named("os-auth-url", authUrl);
+    longOption("os-username", username);
+    longOption("os-password", password);
+    longOption("os-tenant-name", tenantName);
+    longOption("os-auth-url", authUrl);
   }
   
 }
@@ -68,7 +68,7 @@ And finally, use it:
 ```java
 Result r = nova.addFixedIp().server("my-server").networkId("some-uuid").exec();
 if (!r.isSuccessful()) {
-  System.out.println("ERROR: " + r.getOutput());
+  System.out.println("ERROR: " + r.getErrorOutput());
 }
 ```
 
