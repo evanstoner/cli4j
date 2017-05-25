@@ -1,14 +1,12 @@
 package net.evanstoner.cli4j;
 
-import java.io.BufferedReader;
+import sun.misc.IOUtils;
+
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.TreeMap;
 
 public abstract class Command {
-
-
     public enum ParameterOrder {
         NAMED_THEN_POSITIONAL,
         POSITIONAL_THEN_NAMED
@@ -184,38 +182,21 @@ public abstract class Command {
     }
 
 
-    public Result exec() throws IOException, InterruptedException {
-        Process p;
-        int exitCode;
-        String command;
-
-        command = build();
-
+    public Result exec() throws IOException, InterruptedException{
+        String command = build();
         // TODO use ProcessBuilder
 
         // execute the command, capturing the exit code and output
-        p = Runtime.getRuntime().exec(command);
-        exitCode = p.waitFor();
+        Process p = Runtime.getRuntime().exec(command);
+        int exitCode = p.waitFor();
 
-        StringBuilder outputSb = new StringBuilder();
-        StringBuilder errSb = new StringBuilder();
-        BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-        String line;
-        while ((line = br.readLine()) != null) {
-            outputSb.append(line).append(System.lineSeparator());
-        }
+        String out = new String(IOUtils.readFully(p.getInputStream(), -1, true)).trim();
+        String err = new String(IOUtils.readFully(p.getErrorStream(), -1, true)).trim();
 
-        br.close();
-        br = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-        while ((line = br.readLine()) != null) {
-            errSb.append(line).append(System.lineSeparator());
-        }
-        br.close();
-
-        return new Result(exitCode, outputSb.toString(), errSb.toString());
+        return new Result(exitCode, out, err);
     }
 
-    String build() {
+    protected String build() {
 
         String base = "";
 

@@ -37,7 +37,7 @@ public class CommandTest {
 
         assertEquals(1, r.getExitCode());
 
-        assertEquals("ls: /path/to/fake/dir: No such file or directory" + System.lineSeparator(), r.getErrorOutput());
+        assertEquals("ls: /path/to/fake/dir: No such file or directory", r.getErrorOutput());
         assertEquals("", r.getOutput());
 
         assertEquals(String.format("%s /path/to/fake/dir", cmd), ls.build());
