@@ -3,6 +3,7 @@ package net.evanstoner.cli4j;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 
 import static org.junit.Assert.*;
 
@@ -17,19 +18,21 @@ public class CommandTest {
             }.exec();
             fail("exception not caught");
         } catch (IOException e) {
-            assertEquals("Cannot run program \"kfjndl\": error=2, No such file or directory", e.getMessage());
+            String err = (OS.contains("win")) ? "Cannot run program \"kfjndl\": CreateProcess error=2, The system cannot find the file specified"
+                    : "Cannot run program \"kfjndl\": error=2, No such file or directory";
+            assertEquals(err, e.getMessage());
         }
     }
 
     @Test
     public void failedCommandErrStreamIsSet() throws IOException, InterruptedException {
-        String cmd = (OS.contains("win")) ? "dir" : "ls";
+        String cmd = (OS.contains("win")) ? "cmd.exe /c dir" : "ls";
 
         Command ls = new Command(cmd) {
         };
 
 
-        ls.positional(0, "/path/to/fake/dir");
+        ls.positional(0, String.valueOf(Paths.get("/path/to/fake/dir")));
         Result r = ls.exec();
 
         assertTrue(r.hasErrorOutput());
@@ -37,21 +40,22 @@ public class CommandTest {
 
         assertEquals(1, r.getExitCode());
 
-        assertEquals("ls: /path/to/fake/dir: No such file or directory", r.getErrorOutput());
+        String err = (OS.contains("win")) ? "The system cannot find the path specified." : "ls: /path/to/fake/dir: No such file or directory";
+        assertEquals(err, r.getErrorOutput());
         assertEquals("", r.getOutput());
 
-        assertEquals(String.format("%s /path/to/fake/dir", cmd), ls.build());
+        assertEquals(String.format("%s %s", cmd, Paths.get("/path/to/fake/dir").toString()), ls.build());
     }
 
     @Test
     public void successfulCommandOutputStreamIsSet() throws IOException, InterruptedException {
-        String cmd = (OS.contains("win")) ? "dir" : "ls";
+        String cmd = (OS.contains("win")) ? "cmd.exe /c dir" : "ls";
 
         Command ls = new Command(cmd) {
         };
 
 
-        ls.positional(0, "./");
+        ls.positional(0, ".");
         Result r = ls.exec();
 
         assertFalse(r.hasErrorOutput());

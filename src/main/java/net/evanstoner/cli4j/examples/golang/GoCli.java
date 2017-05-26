@@ -21,7 +21,7 @@ public class GoCli extends Command {
         return this.exec();
     }
 
-    public GoBuild build() {
+    public GoBuild gbuild() {
         return new GoBuild(this);
     }
 

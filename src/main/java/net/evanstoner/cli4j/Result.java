@@ -39,4 +39,13 @@ public class Result {
     public boolean hasErrorOutput() {
         return _errOutput != null && _errOutput.length() > 0;
     }
+
+    @Override
+    public String toString() {
+        return String.format("{\n" +
+                "  \"exit_code\" : %d,\n" +
+                "  \"stdout\": %s,\n" +
+                "  \"stderr\": %s\n" +
+                "}", _exitCode, _output, _errOutput);
+    }
 }
