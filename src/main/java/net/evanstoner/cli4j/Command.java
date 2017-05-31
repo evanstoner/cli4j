@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.TreeMap;
 
-public abstract class Command {
+public abstract class Command implements Cloneable {
     public enum ParameterOrder {
         NAMED_THEN_POSITIONAL,
         POSITIONAL_THEN_NAMED
@@ -42,6 +42,35 @@ public abstract class Command {
      */
     protected Command(String baseCommand) {
         this(baseCommand, null);
+    }
+
+    /**
+     * Clone a command
+     *
+     * @param c
+     */
+    protected Command(Command c) {
+        if (c == null){
+            return;
+        }
+
+        this._paramOrder = c._paramOrder;
+
+        this._baseCommand = c._baseCommand;
+
+        if (c._parentCommmand != null) {
+            this._parentCommmand = c._parentCommmand;
+        }
+
+        this._parentCommandGlue = c._parentCommandGlue;
+
+        this._longOptsGlue = c._longOptsGlue;
+        this._longOptsPrefix = c._longOptsPrefix;
+        this._shortOptsPrefix = c._shortOptsPrefix;
+
+        this._shortOpts = new HashMap<>(c._shortOpts);
+        this._longOpts = new HashMap<>(c._longOpts);
+        this._positional = new TreeMap<>(c._positional);
     }
 
     /**
@@ -182,7 +211,7 @@ public abstract class Command {
     }
 
 
-    public Result exec() throws IOException, InterruptedException{
+    public Result exec() throws IOException, InterruptedException {
         String command = build();
         // TODO use ProcessBuilder
 
@@ -252,6 +281,11 @@ public abstract class Command {
         }
 
         return base;
+    }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        return new Command(this) {};
     }
 
     /**

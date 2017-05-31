@@ -338,4 +338,40 @@ public class CommandTest {
 
         assertEquals("docker run #it --Dnetwork=my_docker_network ubuntu /bin/bash", dockerRun.build());
     }
+
+    class Docker extends Command {
+        protected Docker() {
+            super("docker");
+        }
+
+        public Docker(Docker clone) {
+            super(clone);
+        }
+
+        public Docker verbose() {
+            Docker c = new Docker(this);
+            c.shortOption('v');
+            return c;
+        }
+
+        public Drun run(String file) {
+            return new Drun(file, this);
+        }
+    }
+
+    class Drun extends Command {
+        protected Drun(String baseCommand, Command parent) {
+            super("run", parent);
+            this.positional(0, baseCommand);
+        }
+    }
+
+    @Test
+    public void testReusedCommand() {
+        Docker docker = new Docker();
+        assertEquals("docker -v", docker.verbose().build());
+
+        String r = docker.run("ubuntu").build();
+        assertEquals("docker run ubuntu", r);
+    }
 }
