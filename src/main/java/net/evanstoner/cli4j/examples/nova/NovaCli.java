@@ -6,10 +6,10 @@ public class NovaCli extends Command {
 
     public NovaCli(String username, String password, String tenantName, String authUrl) {
         super("nova");
-        named("os-username", username);
-        named("os-password", password);
-        named("os-tenant-name", tenantName);
-        named("os-auth-url", authUrl);
+        longOption("os-username", username);
+        longOption("os-password", password);
+        longOption("os-tenant-name", tenantName);
+        longOption("os-auth-url", authUrl);
     }
 
     public AddFixedIpCommand addFixedIp() {
