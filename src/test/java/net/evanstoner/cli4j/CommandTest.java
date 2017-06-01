@@ -38,10 +38,12 @@ public class CommandTest {
         assertTrue(r.hasErrorOutput());
         assertFalse(r.hasOutput());
 
-        assertEquals(1, r.getExitCode());
+        int errCode = (OS.contains("linux")) ? 2 : 1;
 
-        String err = (OS.contains("win")) ? "The system cannot find the path specified." : "ls: /path/to/fake/dir: No such file or directory";
-        assertEquals(err, r.getErrorOutput());
+        assertEquals(r.toString(), errCode, r.getExitCode());
+
+        String err = (OS.contains("win")) ? "The system cannot find the path specified." : "/path/to/fake/dir: No such file or directory";
+        assertTrue(r.toString(), r.getErrorOutput().contains(err));
         assertEquals("", r.getOutput());
 
         assertEquals(String.format("%s %s", cmd, Paths.get("/path/to/fake/dir").toString()), ls.build());
