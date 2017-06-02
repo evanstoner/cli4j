@@ -1,5 +1,7 @@
 # cli4j
 
+[![Build Status](https://travis-ci.org/evanstoner/cli4j.svg?branch=master)](https://travis-ci.org/evanstoner/cli4j)
+
 **A tiny library for turning CLIs into Java APIs.**
 
 cli4j allows you to quickly create a Java API for any command-line tool. It is itself a fluent API and excels at helping you create a fluent API for a command-line tool.
